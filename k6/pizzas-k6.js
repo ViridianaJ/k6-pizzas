@@ -2,7 +2,6 @@ import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporte
 import { check } from "k6";
 import http from "k6/http";
 
-// URL base de nuestra aplicación de pizzas
 const baseUrl = "http://localhost:3000/api/v1/pizzas";
 
 export const options = {
@@ -11,12 +10,9 @@ export const options = {
 };
 
 export default function () {
- 
-    // 1. POST - Crear una pizza
- 
 
+    // 1. POST - Crear una pizza
     const pizza = {
-        id: 20,
         nombre: "Pizza K6",
         ingredientes: "Queso, pepperoni, salsa de tomate y cebolla"
     };
@@ -35,28 +31,27 @@ export default function () {
         "POST - Crear pizza - status 201": (r) => r.status === 201
     });
 
- 
-    // 2. GET - Obtener la pizza
-   
+    // Obtener el ID generado automáticamente por el servidor
+    const pizzaCreada = responsePost.json();
+    const id = pizzaCreada.id;
 
-    const responseGet = http.get(baseUrl + "/20");
+
+    // 2. GET - Obtener la pizza creada
+    const responseGet = http.get(baseUrl + "/" + id);
 
     check(responseGet, {
         "GET - Obtener pizza - status 200": (r) => r.status === 200
     });
 
 
-   
     // 3. PUT - Actualizar la pizza
-    
-
     const pizzaActualizada = {
         nombre: "Pizza K6 Especial",
         ingredientes: "Queso, pepperoni, salsa BBQ, cebolla y extra queso"
     };
 
     const responsePut = http.put(
-        baseUrl + "/20",
+        baseUrl + "/" + id,
         JSON.stringify(pizzaActualizada),
         {
             headers: {
@@ -70,20 +65,13 @@ export default function () {
     });
 
 
-    
     // 4. DELETE - Eliminar la pizza
-   
-
-    const responseDelete = http.del(baseUrl + "/20");
+    const responseDelete = http.del(baseUrl + "/" + id);
 
     check(responseDelete, {
         "DELETE - Eliminar pizza - status 200": (r) => r.status === 200
     });
 }
-
-
- 
-// Generar reporte HTML
 
 export function handleSummary(data) {
     return {
